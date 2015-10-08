@@ -265,27 +265,27 @@ L.GPX = L.FeatureGroup.extend({
           }
         }
 
-        /*
-         if (options.marker_options.startIconUrl) {
-         // add start pin
-         var p = new L.Marker(coords[0], {
-         clickable: false,
-         icon: new L.GPXTrackIcon({iconUrl: options.marker_options.startIconUrl})
-         });
-         this.fire('addpoint', { point: p });
-         layers.push(p);
-         }
+        if (options.marker_options.startIconUrl) {
+          // add start pin
+          var firstSegment = zonesCoords[0];
+          var p = new L.Marker(firstSegment.coords[0], {
+            clickable: false,
+            icon: new L.GPXTrackIcon({iconUrl: options.marker_options.startIconUrl})
+          });
+          this.fire('addpoint', { point: p });
+          layers.push(p);
+        }
 
-         if (options.marker_options.endIconUrl) {
-         // add end pin
-         p = new L.Marker(coords[coords.length-1], {
-         clickable: false,
-         icon: new L.GPXTrackIcon({iconUrl: options.marker_options.endIconUrl})
-         });
-         this.fire('addpoint', { point: p });
-         layers.push(p);
-         }
-         */
+        if (options.marker_options.endIconUrl) {
+          // add end pin
+          var lastSegment = zonesCoords[zonesCoords.length - 1];
+          p = new L.Marker(lastSegment.coords[lastSegment.coords.length - 1], {
+            clickable: false,
+            icon: new L.GPXTrackIcon({iconUrl: options.marker_options.endIconUrl})
+          });
+          this.fire('addpoint', { point: p });
+          layers.push(p);
+        }
       }
     }
 
@@ -310,7 +310,7 @@ L.GPX = L.FeatureGroup.extend({
   _parse_trkseg: function(line, xml, options, tag) {
     var el = line.getElementsByTagName(tag);
     if (!el.length) return [];
-    var zoneIndex = 0;
+    var zoneIndex = -1;
     var lastZone = 0;
     var currentZone = 0;
     var zonesCoords = [];
@@ -356,20 +356,24 @@ L.GPX = L.FeatureGroup.extend({
         this._info.duration.start = ll.meta.time;
       }
 
-      last = ll;
       currentZone = this._getZone(ll.meta.hr,_DEFAULT_ZONES);
-      if ( currentZone != lastZone){
+      if (currentZone != lastZone){
         zoneIndex++;
         lastZone = currentZone;
+        if (zonesCoords[zoneIndex-1]) {
+        	// push the previous point
+        	zonesCoords[zoneIndex-1].coords.push(ll);
+        }
       }
       if (!zonesCoords[zoneIndex]){
         zonesCoords[zoneIndex]={
-          zone:null,
+          zone:currentZone,
           coords:[]
         };
       }
-      zonesCoords[zoneIndex].zone=currentZone;
       zonesCoords[zoneIndex].coords.push(ll);
+
+      last = ll;
     }
 
     return zonesCoords;
