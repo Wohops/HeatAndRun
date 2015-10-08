@@ -4,7 +4,7 @@ var blue = {r:0, g:0, b:255};
 var green = {r:0, g:255, b:0};
 
 var EMPTY_ARRAY = [];
-var GRADIENT_BASE = ['red', 'yellow', 'green', 'blue', 'cyan'];
+var GRADIENT_BASE = ['red', 'yellow', 'green', 'blue', 'cyan','red'];
 var GRADIENT_RED_YELLOW = generateGradient(red, yellow, 25);
 var GRADIENT_YELLOW_GREEN = generateGradient(yellow, green, 25);
 
@@ -24,7 +24,7 @@ new L.GPX(
           endIconUrl:   'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-icon-end.png',
           shadowUrl:    'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-shadow.png',
       },
-      gradient: GRADIENT,
+      gradient: GRADIENT_BASE,
       polyline_options: {
     	  opacity: 1.0
       }

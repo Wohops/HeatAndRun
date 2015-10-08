@@ -40,6 +40,7 @@ var _MAX_POINT_INTERVAL_MS = 15000;
 var _SECOND_IN_MILLIS = 1000;
 var _MINUTE_IN_MILLIS = 60 * _SECOND_IN_MILLIS;
 var _HOUR_IN_MILLIS = 60 * _MINUTE_IN_MILLIS;
+var _DEFAULT_ZONES = [44,100,140,160,185];
 
 var _DEFAULT_MARKER_OPTS = {
   startIconUrl: 'pin-icon-start.png',
@@ -51,26 +52,23 @@ var _DEFAULT_MARKER_OPTS = {
   shadowAnchor: [16, 47]
 };
 var _DEFAULT_POLYLINE_OPTS = {
-	color:'blue'
+  color:'red'
 };
 var _DEFAULT_GPX_OPTS = {
   parseElements: ['track', 'route']
 };
-var _DEFAULT_GRADIENT_OPTS = [_DEFAULT_POLYLINE_OPTS.color];
-
 L.GPX = L.FeatureGroup.extend({
   initialize: function(gpx, options) {
     options.max_point_interval = options.max_point_interval || _MAX_POINT_INTERVAL_MS;
     options.marker_options = this._merge_objs(
-      _DEFAULT_MARKER_OPTS,
-      options.marker_options || {});
+        _DEFAULT_MARKER_OPTS,
+        options.marker_options || {});
     options.polyline_options = this._merge_objs(
-      _DEFAULT_POLYLINE_OPTS,
-      options.polyline_options || {});
+        _DEFAULT_POLYLINE_OPTS,
+        options.polyline_options || {});
     options.gpx_options = this._merge_objs(
-      _DEFAULT_GPX_OPTS,
-      options.gpx_options || {});
-    options.gradient = options.gradient ? options.gradient : _DEFAULT_GRADIENT_OPTS;
+        _DEFAULT_GPX_OPTS,
+        options.gpx_options || {});
 
     L.Util.setOptions(this, options);
 
@@ -137,7 +135,7 @@ L.GPX = L.FeatureGroup.extend({
 
   get_moving_pace:     function() { return this.get_moving_time() / this.m_to_km(this.get_distance()); },
   get_moving_pace_imp: function() { return this.get_moving_time() / this.get_distance_imp(); },
-  
+
   get_moving_speed:    function() { return this.m_to_km(this.get_distance()) / (this.get_moving_time() / (3600 * 1000)) ; },
   get_moving_speed_imp:function() { return this.to_miles(this.m_to_km(this.get_distance())) / (this.get_moving_time() / (3600 * 1000)) ; },
 
@@ -146,32 +144,32 @@ L.GPX = L.FeatureGroup.extend({
   get_elevation_data:     function() {
     var _this = this;
     return this._info.elevation._points.map(
-      function(p) { return _this._prepare_data_point(p, _this.m_to_km, null,
-        function(a, b) { return a.toFixed(2) + ' km, ' + b.toFixed(0) + ' m'; });
-      });
+        function(p) { return _this._prepare_data_point(p, _this.m_to_km, null,
+            function(a, b) { return a.toFixed(2) + ' km, ' + b.toFixed(0) + ' m'; });
+        });
   },
   get_elevation_data_imp: function() {
     var _this = this;
     return this._info.elevation._points.map(
-      function(p) { return _this._prepare_data_point(p, _this.m_to_mi, _this.to_ft,
-        function(a, b) { return a.toFixed(2) + ' mi, ' + b.toFixed(0) + ' ft'; });
-      });
+        function(p) { return _this._prepare_data_point(p, _this.m_to_mi, _this.to_ft,
+            function(a, b) { return a.toFixed(2) + ' mi, ' + b.toFixed(0) + ' ft'; });
+        });
   },
 
   get_average_hr:         function() { return this._info.hr.avg; },
   get_heartrate_data:     function() {
     var _this = this;
     return this._info.hr._points.map(
-      function(p) { return _this._prepare_data_point(p, _this.m_to_km, null,
-        function(a, b) { return a.toFixed(2) + ' km, ' + b.toFixed(0) + ' bpm'; });
-      });
+        function(p) { return _this._prepare_data_point(p, _this.m_to_km, null,
+            function(a, b) { return a.toFixed(2) + ' km, ' + b.toFixed(0) + ' bpm'; });
+        });
   },
   get_heartrate_data_imp: function() {
     var _this = this;
     return this._info.hr._points.map(
-      function(p) { return _this._prepare_data_point(p, _this.m_to_mi, null,
-        function(a, b) { return a.toFixed(2) + ' mi, ' + b.toFixed(0) + ' bpm'; });
-      });
+        function(p) { return _this._prepare_data_point(p, _this.m_to_mi, null,
+            function(a, b) { return a.toFixed(2) + ' mi, ' + b.toFixed(0) + ' bpm'; });
+        });
   },
 
   reload: function() {
@@ -258,54 +256,40 @@ L.GPX = L.FeatureGroup.extend({
     for (j = 0; j < tags.length; j++) {
       el = xml.getElementsByTagName(tags[j][0]);
       for (i = 0; i < el.length; i++) {
-    	var shouldContinue = false;
-    	var numberParts = options.gradient.length;
-    	
-    	var coords = [];
-    	var firstPoint = null;
-        
-    	for (var partNumber = 0; partNumber < numberParts; partNumber++) {
-        	// add track in multiple part
-        	coords = this._parse_trkseg(el[i], xml, options, tags[j][1], partNumber, numberParts);
-        	if (coords.length === 0) {
-        		shouldContinue = true;
-        		continue;
-        	}
-        	
-        	if (!firstPoint) {
-        		firstPoint = coords[0];
-        	}
-        	
-        	// assign color corresponding to the part
-        	options.polyline_options.color = options.gradient[partNumber];
-        	
-        	var l = new L.Polyline(coords, options.polyline_options);
-        	this.fire('addline', { line: l })
-        	layers.push(l);
-		}
-        if (shouldContinue) {
-        	continue;
+
+        el[i]
+
+        var zonesCoords = this._parse_trkseg(el[i], xml, options, tags[j][1]);
+
+        for (var z = 0; z < zonesCoords.length; z++) {
+          options.polyline_options.color="black";
+          if (zonesCoords[z]) {
+            console.log(zonesCoords[z].coords.length);
+            this._addTrack(layers,zonesCoords[z],options);
+          }
         }
 
-        if (options.marker_options.startIconUrl) {
-          // add start pin
-          var p = new L.Marker(firstPoint, {
-            clickable: false,
-              icon: new L.GPXTrackIcon({iconUrl: options.marker_options.startIconUrl})
-          });
-          this.fire('addpoint', { point: p });
-          layers.push(p);
-        }
+        /*
+         if (options.marker_options.startIconUrl) {
+         // add start pin
+         var p = new L.Marker(coords[0], {
+         clickable: false,
+         icon: new L.GPXTrackIcon({iconUrl: options.marker_options.startIconUrl})
+         });
+         this.fire('addpoint', { point: p });
+         layers.push(p);
+         }
 
-        if (options.marker_options.endIconUrl) {
-          // add end pin
-          p = new L.Marker(coords[coords.length -1], {
-            clickable: false,
-            icon: new L.GPXTrackIcon({iconUrl: options.marker_options.endIconUrl})
-          });
-          this.fire('addpoint', { point: p });
-          layers.push(p);
-        }
+         if (options.marker_options.endIconUrl) {
+         // add end pin
+         p = new L.Marker(coords[coords.length-1], {
+         clickable: false,
+         icon: new L.GPXTrackIcon({iconUrl: options.marker_options.endIconUrl})
+         });
+         this.fire('addpoint', { point: p });
+         layers.push(p);
+         }
+         */
       }
     }
 
@@ -318,17 +302,31 @@ L.GPX = L.FeatureGroup.extend({
     return layer;
   },
 
-  _parse_trkseg: function(line, xml, options, tag, partNumber, numberParts) {
+  _addTrack: function(layers,segment,options) {
+    options.polyline_options.color = options.gradient[segment.zone];
+    var l = new L.Polyline(segment.coords, options.polyline_options);
+    this.fire('addline', { line: l })
+    layers.push(l);
+  },
+
+
+
+  _parse_trkseg: function(line, xml, options, tag) {
     var el = line.getElementsByTagName(tag);
     if (!el.length) return [];
+    var zoneIndex = 0;
+    var lastZone = 0;
+    var currentZone = 0;
+    var zonesCoords = [];
     var coords = [];
     var last = null;
-    var iStart = Math.floor((el.length / numberParts) * partNumber);
-    var iStop = Math.floor((el.length / numberParts) * (partNumber + 1));
-    for (var i = iStart; i < iStop; i++) {
+    var _length = Math.round(el.length / 2);
+    var _start = 0
+
+    for (var i = 0; i < el.length; i++) {
       var _, ll = new L.LatLng(
-        el[i].getAttribute('lat'),
-        el[i].getAttribute('lon'));
+          el[i].getAttribute('lat'),
+          el[i].getAttribute('lon'));
       ll.meta = { time: null, ele: null, hr: null };
 
       _ = el[i].getElementsByTagName('time');
@@ -366,10 +364,36 @@ L.GPX = L.FeatureGroup.extend({
       }
 
       last = ll;
-      coords.push(ll);
+      currentZone = this._getZone(ll.meta.hr,_DEFAULT_ZONES);
+      if ( currentZone != lastZone){
+        zoneIndex++;
+        lastZone = currentZone;
+      }
+      if (!zonesCoords[zoneIndex]){
+        zonesCoords[zoneIndex]={
+          zone:null,
+          coords:[]
+        };
+      }
+      zonesCoords[zoneIndex].zone=currentZone;
+      zonesCoords[zoneIndex].coords.push(ll);
     }
 
-    return coords;
+    return zonesCoords;
+  },
+
+  _getZone: function(hr,zones) {
+    if (hr<zones[0]){
+      return 1;
+    }else if (hr<zones[1]){
+      return 2;
+    }else if (hr<zones[2]){
+      return 3;
+    }else if (hr<zones[3]){
+      return 4;
+    }else if (hr<zones[4]){
+      return 5;
+    }
   },
 
   _dist2d: function(a, b) {
@@ -377,11 +401,11 @@ L.GPX = L.FeatureGroup.extend({
     var dLat = this._deg2rad(b.lat - a.lat);
     var dLon = this._deg2rad(b.lng - a.lng);
     var r = Math.sin(dLat/2) *
-      Math.sin(dLat/2) +
-      Math.cos(this._deg2rad(a.lat)) *
-      Math.cos(this._deg2rad(b.lat)) *
-      Math.sin(dLon/2) *
-      Math.sin(dLon/2);
+        Math.sin(dLat/2) +
+        Math.cos(this._deg2rad(a.lat)) *
+        Math.cos(this._deg2rad(b.lat)) *
+        Math.sin(dLon/2) *
+        Math.sin(dLon/2);
     var c = 2 * Math.atan2(Math.sqrt(r), Math.sqrt(1-r));
     var d = R * c;
     return d;
