@@ -40,7 +40,9 @@ var _MAX_POINT_INTERVAL_MS = 15000;
 var _SECOND_IN_MILLIS = 1000;
 var _MINUTE_IN_MILLIS = 60 * _SECOND_IN_MILLIS;
 var _HOUR_IN_MILLIS = 60 * _MINUTE_IN_MILLIS;
-var _DEFAULT_ZONES = [44,100,140,160,185];
+var _ZONES_CAD = [40,50,60,70,80];
+var _ZONES_HR = [80,113,149,168,186];
+var _DATASET = 'hr';
 
 var _DEFAULT_MARKER_OPTS = {
   startIconUrl: 'pin-icon-start.png',
@@ -339,6 +341,11 @@ L.GPX = L.FeatureGroup.extend({
         this._info.hr._total += ll.meta.hr;
       }
 
+      _ = el[i].getElementsByTagNameNS('*', 'cad');
+      if (_.length > 0) {
+        ll.meta.cad = parseFloat(_[0].textContent);
+      }
+
       this._info.elevation._points.push([this._info.length, ll.meta.ele]);
       this._info.duration.end = ll.meta.time;
 
@@ -356,7 +363,11 @@ L.GPX = L.FeatureGroup.extend({
         this._info.duration.start = ll.meta.time;
       }
 
-      currentZone = this._getZone(ll.meta.hr,_DEFAULT_ZONES);
+      if (_DATASET == 'cad') {
+        currentZone = this._getZone(ll.meta.cad, _ZONES_CAD);
+      }else if (_DATASET == 'hr') {
+        currentZone = this._getZone(ll.meta.hr, _ZONES_HR);
+      }
       if (currentZone != lastZone){
         zoneIndex++;
         lastZone = currentZone;
