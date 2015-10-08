@@ -42,7 +42,9 @@ var _MINUTE_IN_MILLIS = 60 * _SECOND_IN_MILLIS;
 var _HOUR_IN_MILLIS = 60 * _MINUTE_IN_MILLIS;
 var _ZONES_CAD = [40,50,60,70,80];
 var _ZONES_HR = [80,113,149,168,186];
-var _DATASET = 'hr';
+var _ZONES_PACE = [2,3,4,5,6,7,8];
+var _ZONES_VSPEED = [-200,-100,0,100,300,500,700];
+var _DATASET1 = 'vspeed';
 
 var _DEFAULT_MARKER_OPTS = {
   startIconUrl: 'pin-icon-start.png',
@@ -350,30 +352,46 @@ L.GPX = L.FeatureGroup.extend({
       this._info.duration.end = ll.meta.time;
 
       if (last != null) {
-        this._info.length += this._dist3d(last, ll);
+        var d = this._dist3d(last, ll);
+        this._info.length += d;
 
-        var t = ll.meta.ele - last.meta.ele;
-        if (t > 0) this._info.elevation.gain += t;
-        else this._info.elevation.loss += Math.abs(t);
+        var e = ll.meta.ele - last.meta.ele;
+        if (e > 0) this._info.elevation.gain += e;
+        else this._info.elevation.loss += Math.abs(e);
 
-        t = Math.abs(ll.meta.time - last.meta.time);
+        var t = Math.abs(ll.meta.time - last.meta.time);
         this._info.duration.total += t;
         if (t < options.max_point_interval) this._info.duration.moving += t;
+
+        //speed
+        ll.meta.speed = d/t;
+
+        //pace
+        ll.meta.pace = t / d / 60 ;
+
+        //elevation speed
+        ll.meta.vspeed = e * 1000 * 60 * 100 / t;
+
+        console.log('vspeed: '+ll.meta.vspeed);
+
       } else {
         this._info.duration.start = ll.meta.time;
       }
 
-      if (_DATASET == 'cad') {
+      if (_DATASET1 == 'cad') {
         currentZone = this._getZone(ll.meta.cad, _ZONES_CAD);
-      }else if (_DATASET == 'hr') {
+      }else if (_DATASET1 == 'hr') {
         currentZone = this._getZone(ll.meta.hr, _ZONES_HR);
+      }else if (_DATASET1 == 'pace') {
+        currentZone = this._getZone(ll.meta.pace, _ZONES_PACE);
+      }else if (_DATASET1 == 'vspeed') {
+        currentZone = this._getZone(ll.meta.vspeed, _ZONES_VSPEED);
       }
       if (currentZone != lastZone){
         zoneIndex++;
         lastZone = currentZone;
         if (zonesCoords[zoneIndex-1]) {
-        	// push the previous point
-        	zonesCoords[zoneIndex-1].coords.push(ll);
+          zonesCoords[zoneIndex-1].coords.push(ll);
         }
       }
       if (!zonesCoords[zoneIndex]){
@@ -390,16 +408,16 @@ L.GPX = L.FeatureGroup.extend({
     return zonesCoords;
   },
 
-  _getZone: function(hr,zones) {
-    if (hr<zones[0]){
+  _getZone: function(data,zones) {
+    if (data<zones[0]){
       return 0;
-    }else if (hr<zones[1]){
+    }else if (data<zones[1]){
       return 1;
-    }else if (hr<zones[2]){
+    }else if (data<zones[2]){
       return 2;
-    }else if (hr<zones[3]){
+    }else if (data<zones[3]){
       return 3;
-    }else if (hr<zones[4]){
+    }else if (data<zones[4]){
       return 4;
     }
     return 5;
