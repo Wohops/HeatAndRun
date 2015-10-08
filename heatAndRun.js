@@ -15,7 +15,7 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	  attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
 }).addTo(map);
 
-initForm("#heartRateForm", "hr", map);
+initForm("#ConfigForm", map);
 
 
 var currentFile = 'trail.gpx'
@@ -44,18 +44,18 @@ function loadGPX(gpx_file, map, config_options) {
 
 
 
-function initForm(formName, objectName, map) {
+function initForm(formName, map) {
 	$(formName).submit(function( event ) {
 		event.preventDefault();
 		var values= {};
-		values[objectName] = getValueFromForm(formName);
+		values = getValues(formName);
 		map.removeLayer(currentLayer);
 		currentLayer = loadGPX(currentFile, map, values);
 	});
 }
 
 
-function getValueFromForm(target, map) {
+function getValues(target, map) {
   var $inputs = $(target +' :input');
 
   var values = {};
@@ -65,6 +65,7 @@ function getValueFromForm(target, map) {
 	  }
   });
   values["mode"] = $(target +' :input[name="mode"]:checked').val();
+  values["measure"] = $(target +' :input[name="measure"]:checked').val();
   return values;
 }
 
