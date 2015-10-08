@@ -24,7 +24,7 @@ new L.GPX(
           endIconUrl:   'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-icon-end.png',
           shadowUrl:    'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-shadow.png',
       },
-      gradient: GRADIENT_BASE,
+      gradient: ['gray', 'green', 'lime', 'yellow', 'orange', 'red','red'],
       polyline_options: {
     	  opacity: 1.0
       }

@@ -262,7 +262,6 @@ L.GPX = L.FeatureGroup.extend({
         var zonesCoords = this._parse_trkseg(el[i], xml, options, tags[j][1]);
 
         for (var z = 0; z < zonesCoords.length; z++) {
-          options.polyline_options.color="black";
           if (zonesCoords[z]) {
             console.log(zonesCoords[z].coords.length);
             this._addTrack(layers,zonesCoords[z],options);
@@ -384,16 +383,17 @@ L.GPX = L.FeatureGroup.extend({
 
   _getZone: function(hr,zones) {
     if (hr<zones[0]){
-      return 1;
+      return 0;
     }else if (hr<zones[1]){
-      return 2;
+      return 1;
     }else if (hr<zones[2]){
-      return 3;
+      return 2;
     }else if (hr<zones[3]){
-      return 4;
+      return 3;
     }else if (hr<zones[4]){
-      return 5;
+      return 4;
     }
+    return 5;
   },
 
   _dist2d: function(a, b) {
