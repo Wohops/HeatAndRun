@@ -303,10 +303,14 @@ L.GPX = L.FeatureGroup.extend({
   },
 
   _addTrack: function(layers,segment,options) {
-    options.polyline_options.color = options.gradient[segment.zone];
-    var l = new L.Polyline(segment.coords, options.polyline_options);
-    this.fire('addline', { line: l })
-    layers.push(l);
+	  var color = options.gradient[segment.zone];
+	  if (!color) {
+		  color = options.gradient[options.gradient.length - 1];
+	  }
+	options.polyline_options.color = color;
+	var l = new L.Polyline(segment.coords, options.polyline_options);
+	this.fire('addline', { line: l })
+	layers.push(l);
   },
 
 
@@ -427,13 +431,12 @@ L.GPX = L.FeatureGroup.extend({
   },
 
   _getZone: function(data,zones) {
-
-    for (var i=0;i<zones.length;i++) {
-      if (data < zones[i]) {
-        return i;
-      }
-    }
-    return zones.length;
+	  for (var i = 0; i < zones.length; i++) {
+		if (data < zones[i]) {
+			return i;
+		}
+	  }
+	  return zones.length;
   },
 
   _dist2d: function(a, b) {
