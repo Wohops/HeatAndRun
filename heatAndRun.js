@@ -64,6 +64,7 @@ function getValueFromForm(target, map) {
 		  values[this.name] = $(this).val();
 	  }
   });
+  values["mode"] = $(target +' :input[name="mode"]:checked').val();
   return values;
 }
 
