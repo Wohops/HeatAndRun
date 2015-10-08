@@ -56,7 +56,7 @@ var _DEFAULT_POLYLINE_OPTS = {
 var _DEFAULT_GPX_OPTS = {
   parseElements: ['track', 'route']
 };
-var _DEFAULT_GRADIENT_OPTS = ['red'];
+var _DEFAULT_GRADIENT_OPTS = [_DEFAULT_POLYLINE_OPTS.color];
 
 L.GPX = L.FeatureGroup.extend({
   initialize: function(gpx, options) {
@@ -276,6 +276,7 @@ L.GPX = L.FeatureGroup.extend({
         		firstPoint = coords[0];
         	}
         	
+        	// assign color corresponding to the part
         	options.polyline_options.color = options.gradient[partNumber];
         	
         	var l = new L.Polyline(coords, options.polyline_options);
