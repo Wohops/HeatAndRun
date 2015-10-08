@@ -303,9 +303,9 @@ L.GPX = L.FeatureGroup.extend({
   },
 
   _addTrack: function(layers,segment,options) {
-	  var color = options.gradient[segment.zone];
+	  var color = options.colors.zones[segment.zone];
 	  if (!color) {
-		  color = options.gradient[options.gradient.length - 1];
+		  color = options.colors.zones[options.colors.zones.length - 1];
 	  }
 	options.polyline_options.color = color;
 	var l = new L.Polyline(segment.coords, options.polyline_options);

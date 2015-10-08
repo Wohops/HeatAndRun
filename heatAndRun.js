@@ -4,7 +4,7 @@ var blue = {r:0, g:0, b:255};
 var green = {r:0, g:255, b:0};
 
 var EMPTY_ARRAY = [];
-var GRADIENT_BASE = ['gray', 'green', 'lime', 'yellow', 'orange', 'red','black'];
+var ZONES = ['gray', 'green', 'lime', 'yellow', 'orange', 'red','black'];
 var GRADIENT_RED_YELLOW = generateGradient(red, yellow, 25);
 var GRADIENT_YELLOW_GREEN = generateGradient(yellow, green, 25);
 
@@ -32,7 +32,10 @@ function loadGPX(gpx_file, map, config_options) {
 	          endIconUrl:   'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-icon-end.png',
 	          shadowUrl:    'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-shadow.png',
 	      },
-	      gradient: ['gray', 'green', 'lime', 'yellow', 'orange', 'red','black'],
+	      colors: {
+	    	  zones: ZONES,
+	    	  gradient: GRADIENT, 
+	      },
 	      polyline_options: {
 	    	  opacity: 1.0
 	      },
