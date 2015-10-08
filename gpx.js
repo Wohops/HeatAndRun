@@ -86,7 +86,7 @@ L.GPX = L.FeatureGroup.extend({
       length: 0.0,
       elevation: {gain: 0.0, loss: 0.0, _points: []},
       hr: {avg: 0, _total: 0, _points: []},
-      duration: {start: null, end: null, moving: 0, total: 0},
+      duration: {start: null, end: null, moving: 0, total: 0}
     };
 
     if (gpx) {
@@ -319,6 +319,7 @@ L.GPX = L.FeatureGroup.extend({
     var currentZone = 0;
     var zonesCoords = [];
     var last = null;
+    var vspeeds = [];
 
     for (var i = 0; i < el.length; i++) {
       var _, ll = new L.LatLng(
@@ -370,7 +371,22 @@ L.GPX = L.FeatureGroup.extend({
         ll.meta.pace = t / d / 60 ;
 
         //elevation speed
-        ll.meta.vspeed = e * 1000 * 60 * 100 / t;
+        var vspeed = e / t;
+        vspeeds.unshift(vspeed);
+        if (vspeeds.length > 10){
+          vspeeds.pop();
+        }
+
+        var vspeedMean = 0;
+        for (var v = 0; v < vspeeds.length; v++){
+          vspeedMean+=vspeed;
+        }
+
+        ll.meta.vspeed = vspeedMean/vspeeds.length;
+        if(this._info.length > 4800 && this._info.length < 6300) {
+          console.log(Math.round(this._info.length) + ' vs: ' + ll.meta.vspeed );
+        }
+
       } else {
         this._info.duration.start = ll.meta.time;
       }
@@ -411,18 +427,13 @@ L.GPX = L.FeatureGroup.extend({
   },
 
   _getZone: function(data,zones) {
-    if (data<zones[0]){
-      return 0;
-    }else if (data<zones[1]){
-      return 1;
-    }else if (data<zones[2]){
-      return 2;
-    }else if (data<zones[3]){
-      return 3;
-    }else if (data<zones[4]){
-      return 4;
+
+    for (var i=0;i<zones.length;i++) {
+      if (data < zones[i]) {
+        return i;
+      }
     }
-    return 5;
+    return zones.length;
   },
 
   _dist2d: function(a, b) {
