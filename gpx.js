@@ -324,6 +324,24 @@ L.GPX = L.FeatureGroup.extend({
     var zonesCoords = [];
     var last = null;
     var vspeeds = [];
+    var measures = { 
+		hr: {
+			min: Number.MAX_VALUE,
+			max: Number.MIN_VALUE
+		},
+		cad: {
+			min: Number.MAX_VALUE,
+			max: Number.MIN_VALUE
+		},
+		pace: {
+			min: Number.MAX_VALUE,
+			max: Number.MIN_VALUE
+		},
+		vspeed: {
+			min: Number.MAX_VALUE,
+			max: Number.MIN_VALUE
+		}
+	};
 
     for (var i = 0; i < el.length; i++) {
       var _, ll = new L.LatLng(
@@ -346,11 +364,23 @@ L.GPX = L.FeatureGroup.extend({
         ll.meta.hr = parseInt(_[0].textContent);
         this._info.hr._points.push([this._info.length, ll.meta.hr]);
         this._info.hr._total += ll.meta.hr;
+        if (ll.meta.hr < measures.hr.min) {
+        	measures.hr.min = ll.meta.hr; 
+        }
+        if (ll.meta.hr > measures.hr.max) {
+        	measures.hr.max = ll.meta.hr; 
+        }
       }
 
       _ = el[i].getElementsByTagNameNS('*', 'cad');
       if (_.length > 0) {
         ll.meta.cad = parseFloat(_[0].textContent);
+        if (ll.meta.cad < measures.cad.min) {
+        	measures.cad.min = ll.meta.cad; 
+        }
+        if (ll.meta.cad > measures.cad.max) {
+        	measures.cad.max = ll.meta.cad; 
+        }
       }
 
       this._info.elevation._points.push([this._info.length, ll.meta.ele]);
@@ -372,7 +402,13 @@ L.GPX = L.FeatureGroup.extend({
         ll.meta.speed = d/t;
 
         //pace
-        ll.meta.pace = t / d / 60 ;
+        ll.meta.pace = t / d / 60;
+        if (ll.meta.pace < measures.pace.min) {
+        	measures.pace.min = ll.meta.pace; 
+        }
+        if (ll.meta.pace > measures.pace.max) {
+        	measures.pace.max = ll.meta.pace; 
+        }
 
         //elevation speed
         var vspeed = e / t;
@@ -387,6 +423,13 @@ L.GPX = L.FeatureGroup.extend({
         }
 
         ll.meta.vspeed = vspeedMean/vspeeds.length;
+        if (ll.meta.vspeed < measures.vspeed.min) {
+        	measures.vspeed.min = ll.meta.vspeed; 
+        }
+        if (ll.meta.vspeed > measures.vspeed.max) {
+        	measures.vspeed.max = ll.meta.vspeed; 
+        }
+        
         if(this._info.length > 4800 && this._info.length < 6300) {
           console.log(Math.round(this._info.length) + ' vs: ' + ll.meta.vspeed );
         }
@@ -426,7 +469,7 @@ L.GPX = L.FeatureGroup.extend({
 
       last = ll;
     }
-
+    zonesCoords["measures"] = measures;
     return zonesCoords;
   },
 
