@@ -257,13 +257,10 @@ L.GPX = L.FeatureGroup.extend({
       el = xml.getElementsByTagName(tags[j][0]);
       for (i = 0; i < el.length; i++) {
 
-        el[i]
-
         var zonesCoords = this._parse_trkseg(el[i], xml, options, tags[j][1]);
 
         for (var z = 0; z < zonesCoords.length; z++) {
           if (zonesCoords[z]) {
-            console.log(zonesCoords[z].coords.length);
             this._addTrack(layers,zonesCoords[z],options);
           }
         }
@@ -317,10 +314,7 @@ L.GPX = L.FeatureGroup.extend({
     var lastZone = 0;
     var currentZone = 0;
     var zonesCoords = [];
-    var coords = [];
     var last = null;
-    var _length = Math.round(el.length / 2);
-    var _start = 0
 
     for (var i = 0; i < el.length; i++) {
       var _, ll = new L.LatLng(
