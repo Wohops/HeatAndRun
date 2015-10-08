@@ -15,23 +15,57 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	  attribution: 'Map data &copy; <a href="http://www.osm.org">OpenStreetMap</a>'
 }).addTo(map);
 
-var gpx = 'trail.gpx'; // URL to your GPX file or the GPX itself
-new L.GPX(
-	gpx, {
-	  async: true,
-	  marker_options: {
-          startIconUrl: 'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-icon-start.png',
-          endIconUrl:   'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-icon-end.png',
-          shadowUrl:    'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-shadow.png',
-      },
-      gradient: ['gray', 'green', 'lime', 'yellow', 'orange', 'red','black'],
-      polyline_options: {
-    	  opacity: 1.0
-      }
-	}).on('loaded', function(e) {
-  map.fitBounds(e.target.getBounds());
-}).addTo(map);
+initForm("#heartRateForm", "hr", map);
 
+
+var currentFile = 'trail.gpx'
+var currentLayer = loadGPX(currentFile, map); // URL to your GPX file or the GPX itself
+
+
+
+function loadGPX(gpx_file, map, config_options) {
+	return new L.GPX(
+		gpx_file, {
+		  async: true,
+		  marker_options: {
+	          startIconUrl: 'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-icon-start.png',
+	          endIconUrl:   'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-icon-end.png',
+	          shadowUrl:    'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-shadow.png',
+	      },
+	      gradient: ['gray', 'green', 'lime', 'yellow', 'orange', 'red','black'],
+	      polyline_options: {
+	    	  opacity: 1.0
+	      },
+	      config_options: config_options ? config_options : null
+		}).on('loaded', function(e) {
+	  map.fitBounds(e.target.getBounds());
+	}).addTo(map);
+}
+
+
+
+function initForm(formName, objectName, map) {
+	$(formName).submit(function( event ) {
+		event.preventDefault();
+		var values= {};
+		values[objectName] = getValueFromForm(formName);
+		map.removeLayer(currentLayer);
+		currentLayer = loadGPX(currentFile, map, values);
+	});
+}
+
+
+function getValueFromForm(target, map) {
+  var $inputs = $(target +' :input');
+
+  var values = {};
+  $inputs.each(function() {
+	  if (this.name) {
+		  values[this.name] = $(this).val();
+	  }
+  });
+  return values;
+}
 
 function makeGradientColor(color1, color2, percent) {
     var newColor = {};

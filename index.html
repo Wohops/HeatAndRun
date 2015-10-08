@@ -1,18 +1,51 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Heat&Run</title>
-  <meta charset="utf-8" />
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+  
+    <title>Heat & Run</title>
 
-  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.css" />
-</head>
-<body>
-  <div id="map" style="width: 1280px; height: 780px"></div>
+    <!-- Bootstrap -->
+    <link href="bootstrap-3.3.5-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap-3.3.5-dist/css/bootstrap-theme.min.css" rel="stylesheet">
 
-  <script src="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.js"></script>
-  <script src="gpx.js"></script>
-  <script src="heatAndRun.js"></script>
-</body>
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="map-with-menu">
+      <div id="map" class="col-md-8"></div>
+      <div class="col-md-4 menu">
+         <form id="heartRateForm">
+           <h2>Heart Rate control</h2>
+	         <div class="form-group">
+	            <label for="inputHRMin">Min</label>
+	            <input type="text" class="form-control" id="inputHRMin" placeholder="Min" name="min">
+	         </div>
+	         <div class="form-group">
+	            <label for="inputHRMax">Max</label>
+	            <input type="text" class="form-control" id="inputHRMax" placeholder="Max" name="max" >
+	         </div>
+	         <input class="btn btn-primary" type="submit">
+          </form>
+ 	    </div>
+    </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="bootstrap-3.3.5-dist/js/bootstrap.min.js"></script>
+
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.js"></script>
+    <script src="gpx.js"></script>
+    <script src="heatAndRun.js"></script>
+  </body>
 </html>
