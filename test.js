@@ -1,8 +1,14 @@
 var red = {r:255, g:0, b:0};
+var yellow = {r:255, g:255, b:0};
 var blue = {r:0, g:0, b:255};
-var GRADIENT1 = ['red', 'yellow', 'green', 'blue', 'cyan'];
-var GRADIENT2 = generateGradient(red, blue, 5);
-var GRADIENT = GRADIENT1;
+var green = {r:0, g:255, b:0};
+
+var EMPTY_ARRAY = [];
+var GRADIENT_BASE = ['red', 'yellow', 'green', 'blue', 'cyan'];
+var GRADIENT_RED_YELLOW = generateGradient(red, yellow, 25);
+var GRADIENT_YELLOW_GREEN = generateGradient(yellow, green, 25);
+
+var GRADIENT = EMPTY_ARRAY.concat(GRADIENT_RED_YELLOW, GRADIENT_YELLOW_GREEN);
 
 var map = L.map('map');
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -57,7 +63,7 @@ function makeGradientColor(color1, color2, percent) {
 function generateGradient(color1, color2, numberParts) {
 	var colors = [];
 	for (var i = 0; i < numberParts; i++) {
-		colors[i] = makeGradientColor(red, blue, i * Math.floor(100 / numberParts)).cssColor;
+		colors[i] = makeGradientColor(color1, color2, i * Math.floor(100 / numberParts)).cssColor;
 	}
 	return colors;
 }

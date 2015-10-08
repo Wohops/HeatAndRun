@@ -260,12 +260,20 @@ L.GPX = L.FeatureGroup.extend({
       for (i = 0; i < el.length; i++) {
     	var shouldContinue = false;
     	var numberParts = options.gradient.length;
-        for (var partNumber = 0; partNumber < numberParts; partNumber++) {
+    	
+    	var coords = [];
+    	var firstPoint = null;
+        
+    	for (var partNumber = 0; partNumber < numberParts; partNumber++) {
         	// add track in multiple part
-        	var coords = this._parse_trkseg(el[i], xml, options, tags[j][1], partNumber, numberParts);
+        	coords = this._parse_trkseg(el[i], xml, options, tags[j][1], partNumber, numberParts);
         	if (coords.length === 0) {
         		shouldContinue = true;
         		continue;
+        	}
+        	
+        	if (!firstPoint) {
+        		firstPoint = coords[0];
         	}
         	
         	options.polyline_options.color = options.gradient[partNumber];
@@ -278,25 +286,25 @@ L.GPX = L.FeatureGroup.extend({
         	continue;
         }
 
-//        if (options.marker_options.startIconUrl) {
-//          // add start pin
-//          var p = new L.Marker(coords[0], {
-//            clickable: false,
-//              icon: new L.GPXTrackIcon({iconUrl: options.marker_options.startIconUrl})
-//          });
-//          this.fire('addpoint', { point: p });
-//          layers.push(p);
-//        }
-//
-//        if (options.marker_options.endIconUrl) {
-//          // add end pin
-//          p = new L.Marker(coords[coords.length-1], {
-//            clickable: false,
-//            icon: new L.GPXTrackIcon({iconUrl: options.marker_options.endIconUrl})
-//          });
-//          this.fire('addpoint', { point: p });
-//          layers.push(p);
-//        }
+        if (options.marker_options.startIconUrl) {
+          // add start pin
+          var p = new L.Marker(firstPoint, {
+            clickable: false,
+              icon: new L.GPXTrackIcon({iconUrl: options.marker_options.startIconUrl})
+          });
+          this.fire('addpoint', { point: p });
+          layers.push(p);
+        }
+
+        if (options.marker_options.endIconUrl) {
+          // add end pin
+          p = new L.Marker(coords[coords.length -1], {
+            clickable: false,
+            icon: new L.GPXTrackIcon({iconUrl: options.marker_options.endIconUrl})
+          });
+          this.fire('addpoint', { point: p });
+          layers.push(p);
+        }
       }
     }
 
