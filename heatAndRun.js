@@ -47,8 +47,13 @@ function loadGPX(gpx_file, map, config_options) {
 function initForm(formName, map) {
 	$(formName).submit(function( event ) {
 		event.preventDefault();
-		var values= {};
-		values = getValues(formName);
+		var values = getValues(formName);
+		map.removeLayer(currentLayer);
+		currentLayer = loadGPX(currentFile, map, values);
+	});
+	
+	$(formName + ' :input[name="measure"]').on('change', function() {
+		var values = getValues(formName);
 		map.removeLayer(currentLayer);
 		currentLayer = loadGPX(currentFile, map, values);
 	});

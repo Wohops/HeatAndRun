@@ -23,37 +23,42 @@
   </head>
   <body>
     <div class="map-with-menu">
-      <div id="map" class="col-md-8"></div>
-      <div class="col-md-4 menu">
+      <div id="map" class="col-md-10"></div>
+      <div class="col-md-2 menu">
          <form id="ConfigForm">
-           <h2>Map Control</h2>
            <div class="form-group">
-             <h2>Measure</h2>
-             <label for="inputMeasureHR">Heart Rate</label>
-             <input type="radio" name="measure" value="hr" id="inputHRModeZone" checked>
-             <label for="inputMeasureCandence">Cadence</label>
-             <input type="radio" name="measure" value="cad" id="inputMeasureCandence">
-             <label for="inputMeasurePace">Pace</label>
-             <input type="radio" name="measure" value="pace" id="inputMeasurePace">
-             <label for="inputMeasureVSpeed">Vertical Speed</label>
-             <input type="radio" name="measure" value="vspeed" id="inputMeasureVSpeed">
+             <h3>Measure</h3>
+             <div class="radio">
+							  <label><input type="radio" name="measure" value="hr" checked>Heart Rate</label>
+						 </div>
+						 <div class="radio">
+                <label><input type="radio" name="measure" value="cad">Cadence</label>
+             </div>
+             <div class="radio">
+                <label><input type="radio" name="measure" value="pace">Pace</label>
+             </div>
+             <div class="radio">
+                <label><input type="radio" name="measure" value="vspeed">Vertical Speed</label>
+             </div>
            </div>
 	         <div class="form-group">
-	            <label for="inputHRMin">Min</label>
-	            <input type="text" class="form-control" id="inputHRMin" placeholder="Min" name="min">
-	         </div>
-	         <div class="form-group">
-	            <label for="inputHRMax">Max</label>
-	            <input type="text" class="form-control" id="inputHRMax" placeholder="Max" name="max" >
-	         </div>
-	         <div class="form-group">
 	           <h3>Display Mode</h3>
-	           <label for="inputHRModeZone">Zones</label>
-	           <input type="radio" name="mode" value="zones" id="inputHRModeZone" checked>
-	           <label for="inputHRModeGradient">Gradient</label>
-	           <input type="radio" name="mode" value="gradient" id="inputHRModeGradient">
+	           <div class="radio">
+                <label><input type="radio" name="mode" value="gradient">Gradient</label>
+             </div>
+             <div class="radio">
+                <label><input type="radio" name="mode" value="zones" checked>Zones</label>
+             </div>
 	         </div>
-	         <input class="btn btn-primary" type="submit">
+<!-- 	         <div class="form-group"> -->
+<!--               <label for="inputHRMin">Min</label> -->
+<!--               <input type="text" class="form-control" id="inputHRMin" placeholder="Min" name="min"> -->
+<!--            </div> -->
+<!--            <div class="form-group"> -->
+<!--               <label for="inputHRMax">Max</label> -->
+<!--               <input type="text" class="form-control" id="inputHRMax" placeholder="Max" name="max" > -->
+<!--            </div> -->
+<!-- 	         <input class="btn btn-primary" type="submit"> -->
          </form>
  	    </div>
     </div>
