@@ -40,7 +40,9 @@ var _MAX_POINT_INTERVAL_MS = 15000;
 var _SECOND_IN_MILLIS = 1000;
 var _MINUTE_IN_MILLIS = 60 * _SECOND_IN_MILLIS;
 var _HOUR_IN_MILLIS = 60 * _MINUTE_IN_MILLIS;
+
 var _DEFAULT_DATASET = 'hr';
+var _DEFAULT_MODE = 'zones';
 
 var _DEFAULT_MARKER_OPTS = {
   startIconUrl: 'pin-icon-start.png',
@@ -50,9 +52,6 @@ var _DEFAULT_MARKER_OPTS = {
   shadowSize: [50, 50],
   iconAnchor: [16, 45],
   shadowAnchor: [16, 47]
-};
-var _DEFAULT_POLYLINE_OPTS = {
-  color:'red'
 };
 var _DEFAULT_GPX_OPTS = {
   parseElements: ['track', 'route']
@@ -64,7 +63,6 @@ L.GPX = L.FeatureGroup.extend({
         _DEFAULT_MARKER_OPTS,
         options.marker_options || {});
     options.polyline_options = this._merge_objs(
-        _DEFAULT_POLYLINE_OPTS,
         options.polyline_options || {});
     options.gpx_options = this._merge_objs(
         _DEFAULT_GPX_OPTS,
@@ -256,9 +254,9 @@ L.GPX = L.FeatureGroup.extend({
     for (j = 0; j < tags.length; j++) {
       el = xml.getElementsByTagName(tags[j][0]);
       for (i = 0; i < el.length; i++) {
-
-        var measures = this._extract_measures(el[i], xml, options, tags[j][1]);
-        var zonesCoords = this._extract_zones(el[i], xml, options, tags[j][1]);
+        var data = this._extract_data(el[i], options, tags[j][1]);
+        var measures = this._extract_measures(data, options);
+        var zonesCoords = this._extract_zones(data, options, measures);
 
         for (var z = 0; z < zonesCoords.length; z++) {
           if (zonesCoords[z]) {
@@ -301,29 +299,46 @@ L.GPX = L.FeatureGroup.extend({
 
   _addTrack: function(layers,segment,options) {
     var dataset = _DEFAULT_DATASET;
+    var mode = _DEFAULT_MODE; 
     if (options.config_options) {
         dataset = options.config_options.measure;
+        mode = options.config_options.mode;
     }
-	var color = options.scales[dataset].colors[segment.zone];
-	if (!color) {
-	  color = options.scales[dataset].colors[options.scales[dataset].colors.length - 1];
+    var colors = options.scales[dataset][mode === 'zones' ? 'zonesColors' : 'gradient'];
+	var selectedColor = colors[segment.zone];
+	if (!selectedColor) {
+	  selectedColor = colors[colors.length - 1];
 	}
-	options.polyline_options.color = color;
+	options.polyline_options.color = selectedColor;
 	var l = new L.Polyline(segment.coords, options.polyline_options);
 	this.fire('addline', { line: l })
 	layers.push(l);
   },
-
-  _extract_measures : function(line, xml, options, tag) {
-    var measures = {};
-
+  
+  _extract_data : function(line, options, tag) {
     var el = line.getElementsByTagName(tag);
-    if (!el.length) return [];
+    if (!el.length)
+      return [];
+    
+    var data = [];
     var last = null;
     var vspeeds = [];
 
     for (var i = 0; i < el.length; i++) {
       var ll = this._extract_point_data(el[i], last, vspeeds, options);
+      data.push(ll);
+      last = ll;
+    }
+    return data;
+  },
+
+  _extract_measures : function(points, options, tag) {
+    if (!points.length)
+      return [];
+    var measures = {};
+
+    for (var i = 0; i < points.length; i++) {
+      var ll = points[i];
       for (var key in ll.meta) {
         if (!measures[key]) {
           measures[key] = {
@@ -338,31 +353,34 @@ L.GPX = L.FeatureGroup.extend({
           measures[key].max = ll.meta[key];
         }
       }
-      last = ll;
     }
     return measures;
   },
 
-  _extract_zones : function(line, xml, options, tag) {
-    var el = line.getElementsByTagName(tag);
-    if (!el.length)
+  _extract_zones : function(points, options, measures) {
+    if (!points.length)
       return [];
     var zoneIndex = -1;
     var lastZone = 0;
     var currentZone = 0;
     var zonesCoords = [];
-    var last = null;
-    var vspeeds = [];
 
-    for (var i = 0; i < el.length; i++) {
-      var ll = this._extract_point_data(el[i], last, vspeeds, options);
+    for (var i = 0; i < points.length; i++) {
+      var ll = points[i];
 
       var dataset = _DEFAULT_DATASET;
+      var customZones = true;
       if (options.config_options) {
     	  dataset = options.config_options.measure;
+    	  customZones = options.config_options.mode === 'zones';
+      }
+      
+      var targetZones = options.scales[dataset].zones;
+      if (!customZones) {
+        targetZones = this._generateZones(measures[dataset], options.scales[dataset].gradient.length);
       }
 
-      currentZone = this._getZone(ll.meta[dataset], options.scales[dataset].zones);
+      currentZone = this._getZone(ll.meta[dataset], targetZones);
       
       if (currentZone != lastZone){
         zoneIndex++;
@@ -378,10 +396,21 @@ L.GPX = L.FeatureGroup.extend({
         };
       }
       zonesCoords[zoneIndex].coords.push(ll);
-
-      last = ll;
     }
     return zonesCoords;
+  },
+  
+  _generateZones: function(measures, numberZones) {
+    var min = measures.min;
+    var max = measures.max;
+    var scale = (max - min) / numberZones;
+    var zones = [];
+    zones.push(min);
+    for (var i = 1; i < numberZones - 1; i++) {
+      zones.push(min + (i * scale));
+    }
+    zones.push(max);
+    return zones;
   },
 
   _extract_point_data : function(point, lastPoint, vspeeds, options) {

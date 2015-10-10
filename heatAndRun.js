@@ -1,8 +1,11 @@
 var red = {r:255, g:0, b:0};
+var darkred = {r:139, g:0, b:0};
 var yellow = {r:255, g:255, b:0};
 var blue = {r:0, g:0, b:255};
 var green = {r:0, g:255, b:0};
 var white = {r:255, g:255, b:255};
+var gray = {r:128, g:128, b:128};
+var black = {r:0, g:0, b:0};
 var EMPTY_ARRAY = [];
 
 var map = L.map('map');
@@ -28,28 +31,30 @@ function loadGPX(gpx_file, map, config_options) {
 	      'scales': {
 	        'hr': {
 	          'zones': [80, 125, 150, 170, 185],
-	          'colors': ['gray', 'green', 'lime', 'yellow', 'red', 'darkred'],
+	          'zonesColors': ['gray', 'green', 'lime', 'yellow', 'red', 'darkred'],
 	          'gradient': EMPTY_ARRAY.concat(
-	              generateGradient(green, yellow, 25), 
-	              generateGradient(yellow, red, 25))
+	              generateGradient(gray, green, 25),
+	              generateGradient(green, yellow, 10), 
+	              generateGradient(yellow, red, 10),
+	              generateGradient(red, darkred, 5))
 	        },
 	        'cad': {
 	          'zones': [40, 60, 80, 90, 100],
-	          'colors': ['gray', 'red', 'orange', 'green', 'blue', 'purple'],
+	          'zonesColors': ['gray', 'red', 'orange', 'green', 'blue', 'purple'],
 	          'gradient': EMPTY_ARRAY.concat(
 	              generateGradient(red, green, 25), 
 	              generateGradient(green, blue, 25))
 	        },
 	        'pace': {
 	          'zones': [3, 4.5, 5, 7, 9],
-	          'colors': ['gray', 'green', 'lime', 'yellow', 'red', 'darkred'],
+	          'zonesColors': ['gray', 'green', 'lime', 'yellow', 'red', 'darkred'],
 	          'gradient': EMPTY_ARRAY.concat(
                   generateGradient(green, yellow, 25), 
                   generateGradient(yellow, red, 25))
 	        },
 	        'vspeed': {
 	          'zones': [-200,0,100,500,700],
-	          'colors': ['purple', 'blue', 'gray', 'yellow', 'lime', 'green'],
+	          'zonesColors': ['purple', 'blue', 'gray', 'yellow', 'lime', 'green'],
 	          'gradient': EMPTY_ARRAY.concat(
                   generateGradient(blue, white, 25), 
                   generateGradient(white, green, 25))
@@ -79,6 +84,12 @@ function initForm(formName, map) {
 		map.removeLayer(currentLayer);
 		currentLayer = loadGPX(currentFile, map, values);
 	});
+	
+	$(formName + ' :input[name="mode"]').on('change', function() {
+      var values = getValues(formName);
+      map.removeLayer(currentLayer);
+      currentLayer = loadGPX(currentFile, map, values);
+  });
 }
 
 
