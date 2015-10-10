@@ -39,18 +39,20 @@ function loadGPX(gpx_file, map, config_options) {
 	              generateGradient(red, darkred, 5))
 	        },
 	        'cad': {
-	          'zones': [40, 60, 80, 90, 100],
+	          'zones': [40, 60, 80, 90, 95],
 	          'zonesColors': ['gray', 'red', 'orange', 'green', 'blue', 'purple'],
 	          'gradient': EMPTY_ARRAY.concat(
-	              generateGradient(red, green, 25), 
-	              generateGradient(green, blue, 25))
+	              generateGradient(red, yellow, 30),
+	              generateGradient(yellow, green, 15), 
+	              generateGradient(green, blue, 5))
 	        },
 	        'pace': {
-	          'zones': [3, 4.5, 5, 7, 9],
-	          'zonesColors': ['gray', 'green', 'lime', 'yellow', 'red', 'darkred'],
+	          'zones': [4, 5, 7, 9, 11],
+	          'zonesColors': ['green', 'lime', 'yellow', 'red', 'darkred', 'black'],
 	          'gradient': EMPTY_ARRAY.concat(
                   generateGradient(green, yellow, 25), 
-                  generateGradient(yellow, red, 25))
+                  generateGradient(yellow, red, 25),
+                  generateGradient(red, darkred, 10))
 	        },
 	        'vspeed': {
 	          'zones': [-200,0,100,500,700],
@@ -58,6 +60,14 @@ function loadGPX(gpx_file, map, config_options) {
 	          'gradient': EMPTY_ARRAY.concat(
                   generateGradient(blue, white, 25), 
                   generateGradient(white, green, 25))
+	        },
+	        'ele': {
+	          'zones': [350, 500,650,800,950,1100],
+              'zonesColors': ['darkgreen', 'green', 'lime', 'yellow', 'orange', 'red', 'darkred'],
+              'gradient': EMPTY_ARRAY.concat(
+                  generateGradient(green, yellow, 25), 
+                  generateGradient(yellow, red, 25),
+                  generateGradient(red, darkred, 10))
 	        }
 	      },
 	      polyline_options: {

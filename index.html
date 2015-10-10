@@ -23,8 +23,8 @@
   </head>
   <body>
     <div class="map-with-menu">
-      <div id="map" class="col-md-10"></div>
-      <div class="col-md-2 menu">
+      <div id="map" class="col-md-9"></div>
+      <div class="col-md-3 menu">
          <form id="ConfigForm">
            <div class="form-group">
              <h3>Measure</h3>
@@ -38,16 +38,19 @@
                 <label><input type="radio" name="measure" value="pace">Pace</label>
              </div>
              <div class="radio">
-                <label><input type="radio" name="measure" value="vspeed">Vertical Speed</label>
+                <label><input type="radio" name="measure" value="ele">Altitude</label>
+             </div>
+             <div class="radio">
+                <label><input type="radio" name="measure" value="vspeed">Vertical Speed [BETA]</label>
              </div>
            </div>
 	         <div class="form-group">
 	           <h3>Display Mode</h3>
 	           <div class="radio">
-                <label><input type="radio" name="mode" value="gradient">Gradient</label>
+                <label><input type="radio" name="mode" value="gradient" checked>Gradient</label>
              </div>
              <div class="radio">
-                <label><input type="radio" name="mode" value="zones" checked>Zones</label>
+                <label><input type="radio" name="mode" value="zones">Zones</label>
              </div>
 	         </div>
 <!-- 	         <div class="form-group"> -->

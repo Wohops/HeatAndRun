@@ -42,7 +42,8 @@ var _MINUTE_IN_MILLIS = 60 * _SECOND_IN_MILLIS;
 var _HOUR_IN_MILLIS = 60 * _MINUTE_IN_MILLIS;
 
 var _DEFAULT_DATASET = 'hr';
-var _DEFAULT_MODE = 'zones';
+var _DEFAULT_MODE = 'gradient';
+var _MAX_PACE_FOR_GRADIENT = 14.0; // min/km
 
 var _DEFAULT_MARKER_OPTS = {
   startIconUrl: 'pin-icon-start.png',
@@ -343,18 +344,37 @@ L.GPX = L.FeatureGroup.extend({
         if (!measures[key]) {
           measures[key] = {
             'min' : Number.MAX_VALUE,
-            'max' : Number.MIN_VALUE
+            'max' : Number.MIN_VALUE,
+            'avg' : 0,
+            'data' : []
           }
         }
-        if (ll.meta[key] < measures[key].min) {
-          measures[key].min = ll.meta[key];
+        var value = ll.meta[key];
+        if (value < measures[key].min) {
+          measures[key].min = value;
         }
-        if (ll.meta[key] > measures[key].max) {
-          measures[key].max = ll.meta[key];
+        if (value > measures[key].max) {
+          measures[key].max = value;
         }
+        measures[key].avg += value;
+        measures[key].data.push(value);
       }
     }
+    
+    for (var key in measures) {
+      measures[key].avg = measures[key].avg / measures[key].data.length;
+      measures[key].stdDev = this._standard_deviation(measures[key].data, measures[key].avg);
+    }
+    
     return measures;
+  },
+  
+  _standard_deviation : function (data, average) {
+    var sum = 0;
+    for (var i = 0; i < data.length; i++) {
+      sum += Math.pow(data[i] - average, 2);
+    }
+    return Math.sqrt(sum / data.length);
   },
 
   _extract_zones : function(points, options, measures) {
@@ -369,7 +389,7 @@ L.GPX = L.FeatureGroup.extend({
       var ll = points[i];
 
       var dataset = _DEFAULT_DATASET;
-      var customZones = true;
+      var customZones = _DEFAULT_MODE === 'zones';
       if (options.config_options) {
     	  dataset = options.config_options.measure;
     	  customZones = options.config_options.mode === 'zones';
@@ -377,7 +397,7 @@ L.GPX = L.FeatureGroup.extend({
       
       var targetZones = options.scales[dataset].zones;
       if (!customZones) {
-        targetZones = this._generateZones(measures[dataset], options.scales[dataset].gradient.length);
+        targetZones = this._generateZones(dataset, measures[dataset], options.scales[dataset].gradient.length);
       }
 
       currentZone = this._getZone(ll.meta[dataset], targetZones);
@@ -400,9 +420,9 @@ L.GPX = L.FeatureGroup.extend({
     return zonesCoords;
   },
   
-  _generateZones: function(measures, numberZones) {
+  _generateZones: function(dataset, measures, numberZones) {
     var min = measures.min;
-    var max = measures.max;
+    var max = dataset === 'pace' ? _MAX_PACE_FOR_GRADIENT : measures.max;
     var scale = (max - min) / numberZones;
     var zones = [];
     zones.push(min);
