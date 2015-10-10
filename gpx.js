@@ -261,7 +261,8 @@ L.GPX = L.FeatureGroup.extend({
       el = xml.getElementsByTagName(tags[j][0]);
       for (i = 0; i < el.length; i++) {
 
-        var zonesCoords = this._parse_trkseg(el[i], xml, options, tags[j][1]);
+        var measures = this._extract_measures(el[i], xml, options, tags[j][1]);
+        var zonesCoords = this._extract_zones(el[i], xml, options, tags[j][1]);
 
         for (var z = 0; z < zonesCoords.length; z++) {
           if (zonesCoords[z]) {
@@ -313,131 +314,49 @@ L.GPX = L.FeatureGroup.extend({
 	layers.push(l);
   },
 
+  _extract_measures : function(line, xml, options, tag) {
+    var measures = {};
 
-
-  _parse_trkseg: function(line, xml, options, tag) {
     var el = line.getElementsByTagName(tag);
     if (!el.length) return [];
+    var last = null;
+    var vspeeds = [];
+
+    for (var i = 0; i < el.length; i++) {
+      var ll = this._extract_point_data(el[i], last, vspeeds, options);
+      for (var key in ll.meta) {
+        if (!measures[key]) {
+          measures[key] = {
+            'min' : Number.MAX_VALUE,
+            'max' : Number.MIN_VALUE
+          }
+        }
+        if (ll.meta[key] < measures[key].min) {
+          measures[key].min = ll.meta[key];
+        }
+        if (ll.meta[key] > measures[key].max) {
+          measures[key].max = ll.meta[key];
+        }
+      }
+      last = ll;
+    }
+    return measures;
+  },
+
+  _extract_zones : function(line, xml, options, tag) {
+    var el = line.getElementsByTagName(tag);
+    if (!el.length)
+      return [];
     var zoneIndex = -1;
     var lastZone = 0;
     var currentZone = 0;
     var zonesCoords = [];
     var last = null;
     var vspeeds = [];
-    var measures = { 
-		hr: {
-			min: Number.MAX_VALUE,
-			max: Number.MIN_VALUE
-		},
-		cad: {
-			min: Number.MAX_VALUE,
-			max: Number.MIN_VALUE
-		},
-		pace: {
-			min: Number.MAX_VALUE,
-			max: Number.MIN_VALUE
-		},
-		vspeed: {
-			min: Number.MAX_VALUE,
-			max: Number.MIN_VALUE
-		}
-	};
 
     for (var i = 0; i < el.length; i++) {
-      var _, ll = new L.LatLng(
-          el[i].getAttribute('lat'),
-          el[i].getAttribute('lon'));
-      ll.meta = { time: null, ele: null, hr: null };
+      var ll = this._extract_point_data(el[i], last, vspeeds, options);
 
-      _ = el[i].getElementsByTagName('time');
-      if (_.length > 0) {
-        ll.meta.time = new Date(Date.parse(_[0].textContent));
-      }
-
-      _ = el[i].getElementsByTagName('ele');
-      if (_.length > 0) {
-        ll.meta.ele = parseFloat(_[0].textContent);
-      }
-
-      _ = el[i].getElementsByTagNameNS('*', 'hr');
-      if (_.length > 0) {
-        ll.meta.hr = parseInt(_[0].textContent);
-        this._info.hr._points.push([this._info.length, ll.meta.hr]);
-        this._info.hr._total += ll.meta.hr;
-        if (ll.meta.hr < measures.hr.min) {
-        	measures.hr.min = ll.meta.hr; 
-        }
-        if (ll.meta.hr > measures.hr.max) {
-        	measures.hr.max = ll.meta.hr; 
-        }
-      }
-
-      _ = el[i].getElementsByTagNameNS('*', 'cad');
-      if (_.length > 0) {
-        ll.meta.cad = parseFloat(_[0].textContent);
-        if (ll.meta.cad < measures.cad.min) {
-        	measures.cad.min = ll.meta.cad; 
-        }
-        if (ll.meta.cad > measures.cad.max) {
-        	measures.cad.max = ll.meta.cad; 
-        }
-      }
-
-      this._info.elevation._points.push([this._info.length, ll.meta.ele]);
-      this._info.duration.end = ll.meta.time;
-
-      if (last != null) {
-        var d = this._dist3d(last, ll);
-        this._info.length += d;
-
-        var e = ll.meta.ele - last.meta.ele;
-        if (e > 0) this._info.elevation.gain += e;
-        else this._info.elevation.loss += Math.abs(e);
-
-        var t = Math.abs(ll.meta.time - last.meta.time);
-        this._info.duration.total += t;
-        if (t < options.max_point_interval) this._info.duration.moving += t;
-
-        //speed
-        ll.meta.speed = d/t;
-
-        //pace
-        ll.meta.pace = t / d / 60;
-        if (ll.meta.pace < measures.pace.min) {
-        	measures.pace.min = ll.meta.pace; 
-        }
-        if (ll.meta.pace > measures.pace.max) {
-        	measures.pace.max = ll.meta.pace; 
-        }
-
-        //elevation speed
-        var vspeed = e / t;
-        vspeeds.unshift(vspeed);
-        if (vspeeds.length > 10){
-          vspeeds.pop();
-        }
-
-        var vspeedMean = 0;
-        for (var v = 0; v < vspeeds.length; v++){
-          vspeedMean+=vspeed;
-        }
-
-        ll.meta.vspeed = vspeedMean/vspeeds.length;
-        if (ll.meta.vspeed < measures.vspeed.min) {
-        	measures.vspeed.min = ll.meta.vspeed; 
-        }
-        if (ll.meta.vspeed > measures.vspeed.max) {
-        	measures.vspeed.max = ll.meta.vspeed; 
-        }
-        
-        if(this._info.length > 4800 && this._info.length < 6300) {
-          console.log(Math.round(this._info.length) + ' vs: ' + ll.meta.vspeed );
-        }
-
-      } else {
-        this._info.duration.start = ll.meta.time;
-      }
-      
       var dataset = _DATASET1;
       if (options.config_options) {
     	  dataset = options.config_options.measure;
@@ -469,8 +388,81 @@ L.GPX = L.FeatureGroup.extend({
 
       last = ll;
     }
-    zonesCoords["measures"] = measures;
     return zonesCoords;
+  },
+
+  _extract_point_data : function(point, lastPoint, vspeeds, options) {
+    var _, ll = new L.LatLng(point.getAttribute('lat'), point
+        .getAttribute('lon'));
+    ll.meta = {
+      time : null,
+      ele : null,
+      hr : null
+    };
+
+    _ = point.getElementsByTagName('time');
+    if (_.length > 0) {
+      ll.meta.time = new Date(Date.parse(_[0].textContent));
+    }
+
+    _ = point.getElementsByTagName('ele');
+    if (_.length > 0) {
+      ll.meta.ele = parseFloat(_[0].textContent);
+    }
+
+    _ = point.getElementsByTagNameNS('*', 'hr');
+    if (_.length > 0) {
+      ll.meta.hr = parseInt(_[0].textContent);
+      this._info.hr._points.push([ this._info.length, ll.meta.hr ]);
+      this._info.hr._total += ll.meta.hr;
+    }
+
+    _ = point.getElementsByTagNameNS('*', 'cad');
+    if (_.length > 0) {
+      ll.meta.cad = parseFloat(_[0].textContent);
+    }
+
+    this._info.elevation._points.push([ this._info.length, ll.meta.ele ]);
+    this._info.duration.end = ll.meta.time;
+
+    if (lastPoint != null) {
+      var d = this._dist3d(lastPoint, ll);
+      this._info.length += d;
+
+      var e = ll.meta.ele - lastPoint.meta.ele;
+      if (e > 0)
+        this._info.elevation.gain += e;
+      else
+        this._info.elevation.loss += Math.abs(e);
+
+      var t = Math.abs(ll.meta.time - lastPoint.meta.time);
+      this._info.duration.total += t;
+      if (t < options.max_point_interval)
+        this._info.duration.moving += t;
+
+      // speed
+      ll.meta.speed = d / t;
+
+      // pace
+      ll.meta.pace = t / d / 60;
+
+      // elevation speed
+      var vspeed = e / t;
+      vspeeds.unshift(vspeed);
+      if (vspeeds.length > 10) {
+        vspeeds.pop();
+      }
+
+      var vspeedMean = 0;
+      for (var v = 0; v < vspeeds.length; v++) {
+        vspeedMean += vspeed;
+      }
+
+      ll.meta.vspeed = vspeedMean / vspeeds.length;
+    } else {
+      this._info.duration.start = ll.meta.time;
+    }
+    return ll;
   },
 
   _getZone: function(data,zones) {
