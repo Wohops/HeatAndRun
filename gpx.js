@@ -40,11 +40,7 @@ var _MAX_POINT_INTERVAL_MS = 15000;
 var _SECOND_IN_MILLIS = 1000;
 var _MINUTE_IN_MILLIS = 60 * _SECOND_IN_MILLIS;
 var _HOUR_IN_MILLIS = 60 * _MINUTE_IN_MILLIS;
-var _ZONES_CAD = [40,50,60,70,80];
-var _ZONES_HR = [80,113,149,168,186];
-var _ZONES_PACE = [2,3,4,5,6,7,8];
-var _ZONES_VSPEED = [-200,-100,0,100,300,500,700];
-var _DATASET1 = 'hr';
+var _DEFAULT_DATASET = 'hr';
 
 var _DEFAULT_MARKER_OPTS = {
   startIconUrl: 'pin-icon-start.png',
@@ -304,10 +300,14 @@ L.GPX = L.FeatureGroup.extend({
   },
 
   _addTrack: function(layers,segment,options) {
-	  var color = options.colors.zones[segment.zone];
-	  if (!color) {
-		  color = options.colors.zones[options.colors.zones.length - 1];
-	  }
+    var dataset = _DEFAULT_DATASET;
+    if (options.config_options) {
+        dataset = options.config_options.measure;
+    }
+	var color = options.scales[dataset].colors[segment.zone];
+	if (!color) {
+	  color = options.scales[dataset].colors[options.scales[dataset].colors.length - 1];
+	}
 	options.polyline_options.color = color;
 	var l = new L.Polyline(segment.coords, options.polyline_options);
 	this.fire('addline', { line: l })
@@ -357,20 +357,13 @@ L.GPX = L.FeatureGroup.extend({
     for (var i = 0; i < el.length; i++) {
       var ll = this._extract_point_data(el[i], last, vspeeds, options);
 
-      var dataset = _DATASET1;
+      var dataset = _DEFAULT_DATASET;
       if (options.config_options) {
     	  dataset = options.config_options.measure;
       }
 
-      if (dataset == 'cad') {
-        currentZone = this._getZone(ll.meta.cad, _ZONES_CAD);
-      }else if (dataset == 'hr') {
-        currentZone = this._getZone(ll.meta.hr, _ZONES_HR);
-      }else if (dataset == 'pace') {
-        currentZone = this._getZone(ll.meta.pace, _ZONES_PACE);
-      }else if (dataset == 'vspeed') {
-        currentZone = this._getZone(ll.meta.vspeed, _ZONES_VSPEED);
-      }
+      currentZone = this._getZone(ll.meta[dataset], options.scales[dataset].zones);
+      
       if (currentZone != lastZone){
         zoneIndex++;
         lastZone = currentZone;

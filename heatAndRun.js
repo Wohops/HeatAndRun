@@ -2,13 +2,8 @@ var red = {r:255, g:0, b:0};
 var yellow = {r:255, g:255, b:0};
 var blue = {r:0, g:0, b:255};
 var green = {r:0, g:255, b:0};
-
+var white = {r:255, g:255, b:255};
 var EMPTY_ARRAY = [];
-var ZONES = ['gray', 'green', 'lime', 'yellow', 'orange', 'red','black'];
-var GRADIENT_RED_YELLOW = generateGradient(red, yellow, 25);
-var GRADIENT_YELLOW_GREEN = generateGradient(yellow, green, 25);
-
-var GRADIENT = EMPTY_ARRAY.concat(GRADIENT_RED_YELLOW, GRADIENT_YELLOW_GREEN);
 
 var map = L.map('map');
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -21,8 +16,6 @@ initForm("#ConfigForm", map);
 var currentFile = 'trail.gpx'
 var currentLayer = loadGPX(currentFile, map); // URL to your GPX file or the GPX itself
 
-
-
 function loadGPX(gpx_file, map, config_options) {
 	return new L.GPX(
 		gpx_file, {
@@ -32,9 +25,35 @@ function loadGPX(gpx_file, map, config_options) {
 	          endIconUrl:   'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-icon-end.png',
 	          shadowUrl:    'http://github.com/mpetazzoni/leaflet-gpx/raw/master/pin-shadow.png',
 	      },
-	      colors: {
-	    	  zones: ZONES,
-	    	  gradient: GRADIENT, 
+	      'scales': {
+	        'hr': {
+	          'zones': [80, 125, 150, 170, 185],
+	          'colors': ['gray', 'green', 'lime', 'yellow', 'red', 'darkred'],
+	          'gradient': EMPTY_ARRAY.concat(
+	              generateGradient(green, yellow, 25), 
+	              generateGradient(yellow, red, 25))
+	        },
+	        'cad': {
+	          'zones': [40, 60, 80, 90, 100],
+	          'colors': ['gray', 'red', 'orange', 'green', 'blue', 'purple'],
+	          'gradient': EMPTY_ARRAY.concat(
+	              generateGradient(red, green, 25), 
+	              generateGradient(green, blue, 25))
+	        },
+	        'pace': {
+	          'zones': [3, 4.5, 5, 7, 9],
+	          'colors': ['gray', 'green', 'lime', 'yellow', 'red', 'darkred'],
+	          'gradient': EMPTY_ARRAY.concat(
+                  generateGradient(green, yellow, 25), 
+                  generateGradient(yellow, red, 25))
+	        },
+	        'vspeed': {
+	          'zones': [-200,0,100,500,700],
+	          'colors': ['purple', 'blue', 'gray', 'yellow', 'lime', 'green'],
+	          'gradient': EMPTY_ARRAY.concat(
+                  generateGradient(blue, white, 25), 
+                  generateGradient(white, green, 25))
+	        }
 	      },
 	      polyline_options: {
 	    	  opacity: 1.0
